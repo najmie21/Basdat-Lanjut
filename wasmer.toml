@@ -1,0 +1,5 @@
+[env]
+LOG_CHANNEL = "stderr"
+SESSION_DRIVER = "cookie"
+CACHE_STORE = "array"
+VIEW_COMPILED_PATH = "/tmp"
