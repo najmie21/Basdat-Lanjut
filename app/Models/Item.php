@@ -56,4 +56,21 @@ class Item extends Model
     {
         return $this->hasMany(Comment::class)->latest();
     }
+
+    public function getFotoUrlAttribute(): ?string
+    {
+        if (! $this->foto_path) {
+            return null;
+        }
+
+        if (str_starts_with($this->foto_path, 'http://') || str_starts_with($this->foto_path, 'https://')) {
+            return $this->foto_path;
+        }
+
+        if (str_starts_with($this->foto_path, 'uploads/')) {
+            return asset($this->foto_path);
+        }
+
+        return asset('storage/' . $this->foto_path);
+    }
 }

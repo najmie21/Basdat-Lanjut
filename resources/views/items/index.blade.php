@@ -274,8 +274,8 @@
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col group hover:shadow-lg hover:border-slate-300/80 transition-all duration-300 cursor-pointer" onclick="cardNavigate(event, this, '{{ route('items.show', $item->id) }}')">
                             <!-- Visual/Foto Barang -->
                             <div class="relative h-48 bg-slate-100 overflow-hidden flex-shrink-0">
-                                @if($item->foto_path)
-                                    <img src="{{ str_starts_with($item->foto_path, 'uploads/') ? asset($item->foto_path) : asset('storage/' . $item->foto_path) }}" alt="{{ $item->nama_barang }}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500">
+                                @if($item->foto_url)
+                                    <img src="{{ $item->foto_url }}" alt="{{ $item->nama_barang }}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500">
                                 @else
                                     <!-- Placeholder Foto Eksklusif dengan Gradient -->
                                     <div class="w-full h-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex flex-col items-center justify-center text-indigo-400">

@@ -43,8 +43,8 @@
         <div class="space-y-6">
             <!-- DETAIL BARANG CARD -->
             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                @if($item->foto_path)
-                    <img src="{{ str_starts_with($item->foto_path, 'uploads/') ? asset($item->foto_path) : asset('storage/' . $item->foto_path) }}" alt="{{ $item->nama_barang }}" class="w-full h-96 object-cover">
+                @if($item->foto_url)
+                    <img src="{{ $item->foto_url }}" alt="{{ $item->nama_barang }}" class="w-full h-96 object-cover">
                 @else
                     <div class="w-full h-96 bg-slate-100 flex items-center justify-center text-slate-400">
                         <span class="text-sm font-semibold">Tidak ada foto tersedia</span>

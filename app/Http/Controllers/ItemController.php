@@ -6,8 +6,10 @@ use App\Models\Comment;
 use App\Models\Item;
 use App\Models\User;
 use App\Http\Requests\StoreItemRequest;
+use Cloudinary\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -146,15 +148,40 @@ class ItemController extends Controller
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $fileName = now()->format('YmdHis') . '-' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-            $destination = public_path('uploads/items');
+            $cloudinaryUrl = env('CLOUDINARY_URL');
 
-            if (! is_dir($destination)) {
-                mkdir($destination, 0755, true);
+            if (! empty($cloudinaryUrl)) {
+                try {
+                    $cloudinary = new Cloudinary($cloudinaryUrl);
+                    $uploadProses = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                        'folder' => 'lost_and_found',
+                    ]);
+                    $fotoPath = $uploadProses['secure_url'];
+                } catch (\Throwable $e) {
+                    Log::error('Cloudinary upload error: ' . $e->getMessage());
+
+                    // Fallback ke penyimpanan lokal jika upload ke Cloudinary gagal
+                    $fileName = now()->format('YmdHis') . '-' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+                    $destination = public_path('uploads/items');
+
+                    if (! is_dir($destination)) {
+                        mkdir($destination, 0755, true);
+                    }
+
+                    $file->move($destination, $fileName);
+                    $fotoPath = 'uploads/items/' . $fileName;
+                }
+            } else {
+                $fileName = now()->format('YmdHis') . '-' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('uploads/items');
+
+                if (! is_dir($destination)) {
+                    mkdir($destination, 0755, true);
+                }
+
+                $file->move($destination, $fileName);
+                $fotoPath = 'uploads/items/' . $fileName;
             }
-
-            $file->move($destination, $fileName);
-            $fotoPath = 'uploads/items/' . $fileName;
         }
 
         Item::create([
@@ -386,9 +413,12 @@ class ItemController extends Controller
         }
 
         if ($item->foto_path) {
-            $filePath = public_path($item->foto_path);
-            if (file_exists($filePath)) {
-                @unlink($filePath);
+            // Hanya hapus file jika tersimpan di disk lokal (bukan URL Cloudinary)
+            if (! str_starts_with($item->foto_path, 'http://') && ! str_starts_with($item->foto_path, 'https://')) {
+                $filePath = public_path($item->foto_path);
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
             }
         }
 
